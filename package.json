@@ -1,0 +1,68 @@
+{
+  "name": "pi-lego",
+  "version": "0.1.0",
+  "description": "Turn repeated agent corrections into reusable blocks.",
+  "author": "Grant Hutchins",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nertzy/pi-lego.git"
+  },
+  "homepage": "https://github.com/nertzy/pi-lego#readme",
+  "bugs": {
+    "url": "https://github.com/nertzy/pi-lego/issues"
+  },
+  "type": "module",
+  "keywords": [
+    "pi-package",
+    "pi",
+    "pi-coding-agent",
+    "agent-conventions",
+    "guardrails"
+  ],
+  "engines": {
+    "node": ">=22.19.0"
+  },
+  "files": [
+    "extension.ts",
+    "src/**/*.ts",
+    "README.md",
+    "LICENSE",
+    "THIRD_PARTY_NOTICES.md"
+  ],
+  "exports": {
+    ".": "./src/index.ts",
+    "./blocks/head": "./src/blocks/head.ts",
+    "./blocks/tail": "./src/blocks/tail.ts"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "scripts": {
+    "test": "node --test test/*.test.ts",
+    "typecheck": "tsc --noEmit",
+    "check": "npm test && npm run typecheck"
+  },
+  "pi": {
+    "extensions": [
+      "./extension.ts"
+    ]
+  },
+  "peerDependencies": {
+    "@earendil-works/pi-coding-agent": "*"
+  },
+  "peerDependenciesMeta": {
+    "@earendil-works/pi-coding-agent": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@earendil-works/pi-coding-agent": "^0.85.1",
+    "@types/node": "^22.15.0",
+    "typescript": "^5.8.0"
+  },
+  "dependencies": {
+    "unbash": "4.0.11"
+  }
+}
