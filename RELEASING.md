@@ -1,42 +1,35 @@
 # Releasing
 
-The npm package is published from `.github/workflows/publish.yml` with npm trusted publishing. The workflow uses GitHub's OIDC identity and does not require an npm token.
+Releases use explicit versions, curated changelog entries, and immutable `v<version>` tags. Pushing a matching tag runs `.github/workflows/publish.yml`, which publishes through npm trusted publishing and then creates a GitHub Release from the matching `CHANGELOG.md` section.
 
-## First publication
+The workflow uses GitHub's OIDC identity and does not require an npm token. It uses the npm version bundled with Node 24 and fails before publishing if that version is older than the trusted-publishing minimum.
 
-The `pi-lego` name must first be registered by publishing `0.1.0` manually. Before publishing, run the checks below and inspect the tarball contents:
+## Prepare a release
 
-```bash
-npm install --global npm@latest
-npm ci
-npm test
-npm run typecheck
-npm pack --dry-run
-npm publish --access public --provenance=false
-```
+1. Add a nonempty `## [<version>] - YYYY-MM-DD` section to `CHANGELOG.md`.
+2. Update `version` in `package.json` and `package-lock.json` without creating a tag:
 
-The first local publication cannot carry GitHub Actions provenance. The explicit
-`--provenance=false` overrides `publishConfig.provenance: true` for this bootstrap
-publish; later releases run in GitHub Actions and publish with provenance.
+   ```bash
+   npm version <version> --no-git-tag-version
+   ```
 
-No automated workflow should be run until that first publication is complete.
+3. Run the release checks locally:
 
-Afterward, configure `pi-lego` on npmjs.com with this trusted publisher:
+   ```bash
+   npm ci
+   npm test
+   npm run typecheck
+   npm pack --dry-run
+   node scripts/extract-release-notes.ts <version>
+   ```
 
-- Provider: GitHub Actions
-- Repository owner: `nertzy`
-- Repository: `pi-lego`
-- Workflow filename: `publish.yml`
-- Allowed action: `npm publish`
+4. Merge the version and changelog change to `main` after CI passes.
+5. Verify the intended `main` commit, then create and push an annotated `v<version>` tag at that exact commit.
 
-Then require two-factor authentication and disallow token-based publishing in the package settings.
+The tag push starts the publish workflow. It rejects a tag that differs from `package.json`, a tag that does not point at the checked-out commit, and a missing or empty changelog section before publishing. After publication succeeds, it creates the corresponding GitHub Release using only that version's changelog section.
 
-## Later releases
+Do not move or reuse a pushed release tag. If a release fails after its tag is pushed, fix the problem and release a new version.
 
-1. Update `version` in `package.json` and `package-lock.json`.
-2. Merge the release change to `main` after CI passes.
-3. Create and push a `v<version>` tag that points at that commit.
-4. In GitHub Actions, select **Publish to npm**, choose that tag as the workflow ref, and run the workflow.
-5. Confirm the published version and provenance on npmjs.com.
+## Initial release
 
-The workflow rejects branches and tags that do not exactly match the package version, then repeats installation, tests, and typechecking before publishing from a GitHub-hosted runner.
+Version `0.1.0` was published manually to register the package name before npm trusted publishing was configured. Its `v0.1.0` tag and GitHub Release are historical backfills only; they must not rerun publication.
