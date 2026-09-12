@@ -8,16 +8,16 @@ This is corrective feedback, not a sandbox or permissions engine. It does not ve
 
 ## Install
 
-From a checkout:
-
-```bash
-pi install /path/to/pi-lego
-```
-
-After the package is published:
+Install the published package:
 
 ```bash
 pi install npm:pi-lego
+```
+
+For local development, install a checkout instead:
+
+```bash
+pi install /path/to/pi-lego
 ```
 
 Restart pi or run `/reload`. The package's default extension registers the included blocks for `bash` and `cmux_open_terminal` tool calls.
@@ -49,6 +49,8 @@ The leading comment block may contain blank lines and multiple standalone commen
 ## Write a block
 
 Blocks are small TypeScript objects. There is no JSON DSL.
+
+Import from the public `pi-lego` and `@earendil-works/pi-coding-agent` package names, not checkout paths or package internals. Your extension must be able to resolve its dependencies from its own location. For a packaged extension, declare `pi-lego` in `dependencies`; installing pi-lego as a Pi extension does not by itself put it on every standalone extension's module search path.
 
 ```ts
 import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
