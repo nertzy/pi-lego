@@ -1,8 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-
-import { evaluateCommand } from "../src/index.ts";
 import { tailBlock } from "../src/blocks/tail.ts";
+import { evaluateCommand } from "../src/index.ts";
 
 for (const command of [
   "tail -n 40 app.log",
@@ -13,7 +12,7 @@ for (const command of [
   "env LC_ALL=C tail -n 1 app.log",
   "timeout 5s tail -n 1 app.log",
   "'tail' -n 1 app.log",
-  "env LC_ALL=C \"/usr/bin/tail\" -n 1 app.log",
+  'env LC_ALL=C "/usr/bin/tail" -n 1 app.log',
   "bash -c 'tail -n 1 app.log'",
   "sudo env MODE=test bash -c 'tail -n 1 app.log'",
   'sh -lc "cat app.log | /usr/bin/tail -n 1"',
@@ -28,7 +27,10 @@ for (const command of [
   "`tail -n 1 app.log`",
 ]) {
   test(`detects tail invocation: ${command}`, () => {
-    assert.match(evaluateCommand(command, [tailBlock]) ?? "", /Blocked by tail/);
+    assert.match(
+      evaluateCommand(command, [tailBlock]) ?? "",
+      /Blocked by tail/,
+    );
   });
 }
 
@@ -44,7 +46,7 @@ for (const command of [
   'echo "no tail here just prose about tailoring"',
   "echo 'literal $(tail -n5 f) never runs'",
   "bash -c 'printf ok' tail -n 1 app.log",
-  'echo \'example; "tail" -n 1 app.log\'',
+  "echo 'example; \"tail\" -n 1 app.log'",
   "cat <<'DOC'\ntail -n 1 app.log\nDOC\nprintf ok",
   "# bash -c 'tail -n 1 app.log'\nprintf ok",
   "echo bash -c 'tail -n 1 app.log'",

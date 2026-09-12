@@ -1,11 +1,17 @@
-import { shellCommands, type ShellCommand } from "./shell.ts";
-import { expandWrappers, type WrapperDefinition, type WrapperTarget } from "./wrappers.ts";
+import { type ShellCommand, shellCommands } from "./shell.ts";
+import {
+  expandWrappers,
+  type WrapperDefinition,
+  type WrapperTarget,
+} from "./wrappers.ts";
 
 const basename = (word: string): string => word.split("/").pop() ?? word;
 
 function named(word: string | undefined, name: string): boolean {
   if (word === undefined) return false;
-  return name.includes("/") ? word === name || word.endsWith(`/${name}`) : basename(word) === name;
+  return name.includes("/")
+    ? word === name || word.endsWith(`/${name}`)
+    : basename(word) === name;
 }
 
 function targetCommands(target: WrapperTarget): ShellCommand[] {

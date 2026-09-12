@@ -2,6 +2,7 @@ import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
 import { isToolCallEventType } from "@earendil-works/pi-coding-agent";
 
 import { invokesCommand } from "./detectors.ts";
+
 export {
   builtInWrappers,
   defineWrapper,
@@ -10,6 +11,7 @@ export {
   type WrapperInvocation,
   type WrapperTarget,
 } from "./wrappers.ts";
+
 import type { WrapperDefinition } from "./wrappers.ts";
 
 interface ConventionBlockBase {
@@ -55,7 +57,8 @@ function hasException(command: string, block: ConventionBlock): boolean {
     const line = sourceLine.trim();
     if (line === "") continue;
     if (!line.startsWith("#")) return false;
-    if (line.startsWith(prefix) && line.slice(prefix.length).trim() !== "") return true;
+    if (line.startsWith(prefix) && line.slice(prefix.length).trim() !== "")
+      return true;
   }
 
   return false;
@@ -83,7 +86,8 @@ export function evaluateCommand(
 ): string | undefined {
   const wrappers = options.wrappers ?? [];
   const violations = blocks.filter(
-    (block) => detects(command, block, wrappers) && !hasException(command, block),
+    (block) =>
+      detects(command, block, wrappers) && !hasException(command, block),
   );
   if (violations.length === 0) return undefined;
   return violations.map(feedback).join("\n\n");
