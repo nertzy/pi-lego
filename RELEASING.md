@@ -17,8 +17,7 @@ The workflow uses GitHub's OIDC identity and does not require an npm token. It u
 
    ```bash
    npm ci
-   npm test
-   npm run typecheck
+   npm run check
    npm pack --dry-run
    node scripts/extract-release-notes.ts <version>
    ```

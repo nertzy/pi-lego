@@ -21,7 +21,10 @@ if (start === -1) {
 const nextSection = lines.findIndex(
   (line, index) => index > start && line.startsWith("## "),
 );
-const section = lines.slice(start, nextSection === -1 ? undefined : nextSection);
+const section = lines.slice(
+  start,
+  nextSection === -1 ? undefined : nextSection,
+);
 while (section.at(-1) === "") section.pop();
 
 if (!section.slice(1).some((line) => line.trim())) {

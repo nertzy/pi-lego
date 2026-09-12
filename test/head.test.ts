@@ -13,7 +13,7 @@ for (const command of [
   "env LC_ALL=C head -n 1 app.log",
   "timeout 5s head -n 1 app.log",
   "'head' -n 1 app.log",
-  "env LC_ALL=C \"/usr/bin/head\" -n 1 app.log",
+  'env LC_ALL=C "/usr/bin/head" -n 1 app.log',
   "bash -c 'head -n 1 app.log'",
   "sudo env MODE=test bash -c 'head -n 1 app.log'",
   'sh -lc "cat app.log | /usr/bin/head -n 1"',
@@ -28,7 +28,10 @@ for (const command of [
   "`head -n 1 app.log`",
 ]) {
   test(`detects head invocation: ${command}`, () => {
-    assert.match(evaluateCommand(command, [headBlock]) ?? "", /Blocked by head/);
+    assert.match(
+      evaluateCommand(command, [headBlock]) ?? "",
+      /Blocked by head/,
+    );
   });
 }
 
@@ -44,7 +47,7 @@ for (const command of [
   'echo "no head here just prose about headings"',
   "echo 'literal $(head -n5 f) never runs'",
   "bash -c 'printf ok' head -n 1 app.log",
-  'echo \'example; "head" -n 1 app.log\'',
+  "echo 'example; \"head\" -n 1 app.log'",
   "cat <<'DOC'\nhead -n 1 app.log\nDOC\nprintf ok",
   "# bash -c 'head -n 1 app.log'\nprintf ok",
   "echo bash -c 'head -n 1 app.log'",

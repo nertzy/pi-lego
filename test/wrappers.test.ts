@@ -2,9 +2,9 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 
 import {
+  type ConventionBlock,
   defineWrapper,
   evaluateCommand,
-  type ConventionBlock,
   type WrapperDefinition,
 } from "../src/index.ts";
 
@@ -15,8 +15,10 @@ const block: ConventionBlock = {
   alternative: "Use another command.",
 };
 
-const blocked = (command: string, wrappers: readonly WrapperDefinition[] = []): boolean =>
-  evaluateCommand(command, [block], { wrappers }) !== undefined;
+const blocked = (
+  command: string,
+  wrappers: readonly WrapperDefinition[] = [],
+): boolean => evaluateCommand(command, [block], { wrappers }) !== undefined;
 
 for (const command of [
   "op run -- target arg",
@@ -46,7 +48,10 @@ for (const command of [
 
 test("custom declarative wrappers compose with built-ins", () => {
   const wrappers = [defineWrapper({ prefix: "launcher start --" })];
-  assert.equal(blocked("op run -- launcher start -- target arg", wrappers), true);
+  assert.equal(
+    blocked("op run -- launcher start -- target arg", wrappers),
+    true,
+  );
 });
 
 test("string and token-array prefixes have equivalent matching", () => {
@@ -71,7 +76,10 @@ for (const prefix of [
   "",
 ]) {
   test(`rejects unsafe string prefix: ${JSON.stringify(prefix)}`, () => {
-    assert.throws(() => defineWrapper({ prefix }), /single static command prefix/i);
+    assert.throws(
+      () => defineWrapper({ prefix }),
+      /single static command prefix/i,
+    );
   });
 }
 
@@ -83,7 +91,10 @@ test("a custom resolver handles unusual wrapper arguments", () => {
       return marker < 0 ? undefined : { words: args.slice(marker + 1) };
     },
   });
-  assert.equal(blocked("launcher --mode unusual execute: target arg", [wrapper]), true);
+  assert.equal(
+    blocked("launcher --mode unusual execute: target arg", [wrapper]),
+    true,
+  );
 });
 
 test("malformed shell is parsed best-effort without throwing", () => {

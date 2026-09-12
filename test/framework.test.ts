@@ -3,9 +3,9 @@ import { test } from "node:test";
 
 import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
 import {
+  type ConventionBlock,
   evaluateCommand,
   registerBlocks,
-  type ConventionBlock,
 } from "../src/index.ts";
 
 const alpha: ConventionBlock = {
@@ -84,7 +84,10 @@ test("an exception reason accepts ordinary punctuation", () => {
 });
 
 test("a partial set of exceptions still reports the other matching block", () => {
-  const reason = evaluateCommand("# allow-alpha: focused query\nalpha | delta", [alpha, delta]);
+  const reason = evaluateCommand(
+    "# allow-alpha: focused query\nalpha | delta",
+    [alpha, delta],
+  );
   assert.doesNotMatch(reason ?? "", /Alpha hides useful evidence/);
   assert.match(reason ?? "", /Delta hides useful evidence/);
 });
@@ -99,21 +102,32 @@ for (const command of [
   "# allow-alpha reason\nalpha",
 ]) {
   test(`rejects malformed or non-leading exception: ${JSON.stringify(command)}`, () => {
-    assert.match(evaluateCommand(command, [alpha]) ?? "", /Alpha hides useful evidence/);
+    assert.match(
+      evaluateCommand(command, [alpha]) ?? "",
+      /Alpha hides useful evidence/,
+    );
   });
 }
 
 test("infers an allow comment from the block id", () => {
   assert.equal(
-    evaluateCommand("# allow delta: final artifact is the query\ndelta records", [delta]),
+    evaluateCommand(
+      "# allow delta: final artifact is the query\ndelta records",
+      [delta],
+    ),
     undefined,
   );
-  assert.match(evaluateCommand("delta records", [delta]) ?? "", /# allow delta:/);
+  assert.match(
+    evaluateCommand("delta records", [delta]) ?? "",
+    /# allow delta:/,
+  );
 });
 
 test("a block without an exception cannot be overridden", () => {
   assert.match(
-    evaluateCommand("# allow omega: attempted override\nomega records", [omega]) ?? "",
+    evaluateCommand("# allow omega: attempted override\nomega records", [
+      omega,
+    ]) ?? "",
     /Omega is too broad/,
   );
 });
@@ -133,14 +147,20 @@ test("registers one tool_call hook for bash and cmux_open_terminal", () => {
 
   registerBlocks(pi, [alpha]);
   assert.ok(handler);
-  assert.deepEqual(
-    handler({ toolName: "bash", input: { command: "alpha" } }),
-    { block: true, reason: evaluateCommand("alpha", [alpha]) },
-  );
+  assert.deepEqual(handler({ toolName: "bash", input: { command: "alpha" } }), {
+    block: true,
+    reason: evaluateCommand("alpha", [alpha]),
+  });
   assert.deepEqual(
     handler({ toolName: "cmux_open_terminal", input: { command: "alpha" } }),
     { block: true, reason: evaluateCommand("alpha", [alpha]) },
   );
-  assert.equal(handler({ toolName: "read", input: { path: "alpha" } }), undefined);
-  assert.equal(handler({ toolName: "cmux_open_terminal", input: {} }), undefined);
+  assert.equal(
+    handler({ toolName: "read", input: { path: "alpha" } }),
+    undefined,
+  );
+  assert.equal(
+    handler({ toolName: "cmux_open_terminal", input: {} }),
+    undefined,
+  );
 });

@@ -42,7 +42,11 @@
   "scripts": {
     "test": "node --test test/*.test.ts",
     "typecheck": "tsc --noEmit",
-    "check": "npm test && npm run typecheck"
+    "check": "npm run lint && npm test && npm run typecheck",
+    "lint": "npm run lint:biome && npm run lint:markdown && actionlint .github/workflows/*.yml",
+    "lint:biome": "biome check .",
+    "lint:markdown": "markdownlint-cli2 \"**/*.md\" \"#node_modules\" \"#tmp\"",
+    "lint:fix": "biome check --write . && markdownlint-cli2 --fix \"**/*.md\" \"#node_modules\" \"#tmp\""
   },
   "pi": {
     "extensions": [
@@ -58,11 +62,16 @@
     }
   },
   "devDependencies": {
+    "@biomejs/biome": "^2.5.13",
     "@earendil-works/pi-coding-agent": "^0.85.1",
     "@types/node": "^26.5.0",
+    "markdownlint-cli2": "^0.23.2",
     "typescript": "^7.0.2"
   },
   "dependencies": {
     "unbash": "4.0.11"
+  },
+  "overrides": {
+    "smol-toml": "1.8.0"
   }
 }

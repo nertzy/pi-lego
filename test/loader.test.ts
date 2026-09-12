@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
-import { test } from "node:test";
 import { dirname, resolve } from "node:path";
+import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
 import { discoverAndLoadExtensions } from "@earendil-works/pi-coding-agent";
@@ -67,8 +67,14 @@ test("the pi loader registers the default tool_call path", async () => {
 
     for (const [fixture, command] of [
       ["quoted", "printf '%s\\n' '# allow head: quoted string' | head -n 1"],
-      ["inline", "printf '%s\\n' one two | head -n 1 # allow head: inline comment"],
-      ["later", "printf ready\n# allow head: later comment\nhead -n 1 harmless.log"],
+      [
+        "inline",
+        "printf '%s\\n' one two | head -n 1 # allow head: inline comment",
+      ],
+      [
+        "later",
+        "printf ready\n# allow head: later comment\nhead -n 1 harmless.log",
+      ],
     ]) {
       const inert = await handler(
         {
