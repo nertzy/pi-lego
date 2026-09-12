@@ -59,8 +59,8 @@
   },
   "devDependencies": {
     "@earendil-works/pi-coding-agent": "^0.85.1",
-    "@types/node": "^22.15.0",
-    "typescript": "^5.8.0"
+    "@types/node": "^26.5.0",
+    "typescript": "^7.0.2"
   },
   "dependencies": {
     "unbash": "4.0.11"
