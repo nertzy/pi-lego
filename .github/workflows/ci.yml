@@ -1,0 +1,50 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [22.19.0, 24.x]
+
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      - run: npm run typecheck
+      - name: Smoke-test the published package shape
+        shell: bash
+        run: |
+          tarball=$(npm pack --json | node -e \
+            "let input=''; process.stdin.on('data', chunk => input += chunk); process.stdin.on('end', () => { const data = JSON.parse(input); console.log((Array.isArray(data) ? data[0] : Object.values(data)[0]).filename); })")
+          smoke_dir=$(mktemp -d)
+          trap 'rm -rf "$smoke_dir" "$tarball"' EXIT
+          npm install --prefix "$smoke_dir" "$PWD/$tarball" @earendil-works/pi-coding-agent
+          (
+            cd "$smoke_dir"
+            node --input-type=module -e '
+              import assert from "node:assert/strict";
+              import { resolve } from "node:path";
+              import { discoverAndLoadExtensions } from "@earendil-works/pi-coding-agent";
+
+              const extensionPath = resolve("node_modules/pi-lego/extension.ts");
+              const loaded = await discoverAndLoadExtensions([extensionPath], process.cwd());
+              assert.deepEqual(loaded.errors, []);
+              const extension = loaded.extensions.find(
+                candidate => candidate.resolvedPath === extensionPath,
+              );
+              assert.equal(extension?.handlers.get("tool_call")?.length, 1);
+            '
+          )
