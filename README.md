@@ -26,6 +26,15 @@ Restart pi or run `/reload`. The package's default extension registers the inclu
 
 Ordinary command output should stream because pi already bounds model-visible output and preserves the full result when it truncates. Using `head` or `tail` to hide ordinary output loses evidence; let the full output stream and rely on the harness bounds instead.
 
+When a block matches, the command is not executed and the agent sees feedback like:
+
+```text
+Command blocked (not executed): `tail` not allowed.
+Pi already bounds model-visible output and preserves the full result when it truncates, so hiding ordinary output with `tail` loses useful evidence.
+Instead: Re-run the same command without the `tail` segment and let the output stream. Use a producer's own filters when the query itself is narrow.
+Exception: put `# allow tail: <specific reason>` in the leading comment block.
+```
+
 ### `head`
 
 `head` waits for N lines or EOF. A finite producer that closes after fewer lines returns normally, but a live producer that keeps stdout open can wait indefinitely. Prefer producer-native bounds or a timeout for live streams. An initial-lines query can declare its narrow intent in the leading comment block:
