@@ -6,7 +6,7 @@ export const tailBlock: ConventionBlock = {
   rationale:
     "Pi already bounds model-visible output and preserves the full result when it truncates, so hiding ordinary output with `tail` loses useful evidence.",
   alternative:
-    "Let the output stream. Use a producer's own filters when the query itself is narrow.",
+    "Re-run the same command without the `tail` segment and let the output stream. Use a producer's own filters when the query itself is narrow.",
   exception: {
     description: "specific reason",
   },

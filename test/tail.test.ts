@@ -29,7 +29,7 @@ for (const command of [
   test(`detects tail invocation: ${command}`, () => {
     assert.match(
       evaluateCommand(command, [tailBlock]) ?? "",
-      /Blocked by tail/,
+      /`tail` not allowed/,
     );
   });
 }

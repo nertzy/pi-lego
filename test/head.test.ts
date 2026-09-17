@@ -30,7 +30,7 @@ for (const command of [
   test(`detects head invocation: ${command}`, () => {
     assert.match(
       evaluateCommand(command, [headBlock]) ?? "",
-      /Blocked by head/,
+      /`head` not allowed/,
     );
   });
 }

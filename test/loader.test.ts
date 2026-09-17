@@ -33,11 +33,11 @@ test("the pi loader registers the default tool_call path", async () => {
   assert.deepEqual(blocked, {
     block: true,
     reason:
-      "Blocked by tail.\nPi already bounds model-visible output and preserves the full result when it truncates, so hiding ordinary output with `tail` loses useful evidence.\nInstead: Let the output stream. Use a producer's own filters when the query itself is narrow.\nException: put `# allow tail: <specific reason>` in the leading comment block.",
+      "Command blocked (not executed): `tail` not allowed.\nPi already bounds model-visible output and preserves the full result when it truncates, so hiding ordinary output with `tail` loses useful evidence.\nInstead: Re-run the same command without the `tail` segment and let the output stream. Use a producer's own filters when the query itself is narrow.\nException: put `# allow tail: <specific reason>` in the leading comment block.",
   });
 
   const headReason =
-    "Blocked by head.\nPi already bounds model-visible output and preserves the full result when it truncates, so hiding ordinary output with `head` loses useful evidence. `head` also waits for N lines or EOF; a live producer that emits fewer lines while keeping stdout open can wait indefinitely.\nInstead: Let the full output stream and rely on pi's bounds. For live streams, use producer-native bounds or a timeout; use `head` only when the initial lines are the actual query.\nException: put `# allow head: <specific reason>` in the leading comment block.";
+    "Command blocked (not executed): `head` not allowed.\nPi already bounds model-visible output and preserves the full result when it truncates, so hiding ordinary output with `head` loses useful evidence. `head` also waits for N lines or EOF; a live producer that emits fewer lines while keeping stdout open can wait indefinitely.\nInstead: Let the full output stream and rely on pi's bounds. For live streams, use producer-native bounds or a timeout; use `head` only when the initial lines are the actual query.\nException: put `# allow head: <specific reason>` in the leading comment block.";
 
   for (const toolName of ["bash", "cmux_open_terminal"]) {
     const headBlocked = await handler(

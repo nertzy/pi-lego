@@ -2,6 +2,12 @@
 
 Notable changes to `pi-lego` are documented here.
 
+## [Unreleased]
+
+### Changed
+
+- Clarified block feedback: the message now states that the command was not executed, says "`tail` not allowed" to mirror the `# allow tail:` exception marker, and leads with the recovery action (re-run without the blocked segment).
+
 ## [0.1.0] - 2026-09-12
 
 ### Added

@@ -66,7 +66,7 @@ function hasException(command: string, block: ConventionBlock): boolean {
 
 function feedback(block: ConventionBlock): string {
   const lines = [
-    `Blocked by ${block.id}.`,
+    `Command blocked (not executed): \`${block.id}\` not allowed.`,
     block.rationale,
     `Instead: ${block.alternative}`,
   ];
