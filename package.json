@@ -1,6 +1,6 @@
 {
   "name": "pi-lego",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Turn repeated agent corrections into reusable blocks.",
   "author": "Grant Hutchins",
   "license": "MIT",
@@ -20,8 +20,15 @@
     "agent-conventions",
     "guardrails"
   ],
+  "devEngines": {
+    "packageManager": {
+      "name": "npm",
+      "version": ">=11.15.0",
+      "onFail": "error"
+    }
+  },
   "engines": {
-    "node": ">=22.19.0"
+    "node": ">=24.0.0"
   },
   "files": [
     "extension.ts",
