@@ -1,5 +1,7 @@
 # pi-lego
 
+[![npm version](https://img.shields.io/npm/v/pi-lego)](https://www.npmjs.com/package/pi-lego)
+
 Turn repeated agent corrections into reusable blocks.
 
 pi-lego is a framework for executable agent conventions. A block detects a command pattern, explains why it is unhelpful, gives an actionable alternative, and can offer a reason-bearing local exception. The default extension includes the `head` and `tail` blocks.
