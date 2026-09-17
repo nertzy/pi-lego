@@ -2,7 +2,7 @@
 
 Notable changes to `pi-lego` are documented here.
 
-## [Unreleased]
+## [0.1.1] - 2026-09-17
 
 ### Changed
 
