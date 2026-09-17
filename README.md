@@ -140,10 +140,10 @@ Related projects cover adjacent needs:
 
 ## Development
 
-Requires Node.js 22.19 or newer.
+pi-lego supports the Node.js release lines in [active support](https://endoflife.date/nodejs); see [CONTRIBUTING.md](CONTRIBUTING.md) for the current toolchain requirements.
 
 ```bash
-npm install
+npm ci
 npm run check
 npm pack --dry-run
 ```
