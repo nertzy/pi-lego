@@ -40,7 +40,36 @@ jobs:
       - run: npm run lint
       - run: npm test
       - run: npm run typecheck
-      - run: npm stage publish --access public --provenance
+      - name: Stage package
+        id: stage
+        run: |
+          set -o pipefail
+          npm stage publish --access public --provenance 2>&1 | tee "$RUNNER_TEMP/stage-output.txt"
+          stage_id=$(grep -oE 'staged with id [0-9a-f-]{36}' "$RUNNER_TEMP/stage-output.txt" | grep -oE '[0-9a-f-]{36}')
+          if [ -z "$stage_id" ]; then
+            echo "::warning::Could not parse the stage id from npm stage publish output"
+          fi
+          echo "stage-id=$stage_id" >> "$GITHUB_OUTPUT"
+      - name: Announce the staged release
+        env:
+          STAGE_ID: ${{ steps.stage.outputs.stage-id }}
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          package=$(node -p "require('./package.json').name")
+          url="https://www.npmjs.com/settings/nertzy/staged-packages?filterPackage=$package&filterVersion=$version"
+          {
+            echo "## :package: \`$package@$version\` is staged — not live yet"
+            echo
+            echo "### [:arrow_right: Review and approve the staged release on npmjs.com]($url)"
+            echo
+            echo "A maintainer with npm 2FA must approve the stage before anyone can install it:"
+            echo
+            echo "1. **Review** — \`npm stage view $STAGE_ID\`, or \`npm stage download $STAGE_ID\` to inspect the tarball."
+            echo "2. **Approve** — \`npm stage approve $STAGE_ID\`, or **Approve** on npmjs.com. 2FA is required either way."
+            echo
+            echo "Stage ID: \`$STAGE_ID\`"
+          } >> "$GITHUB_STEP_SUMMARY"
+          echo "::notice title=$package@$version staged::Approve the staged release on npmjs.com (stage id $STAGE_ID) to make it installable."
 
   release:
     needs: publish

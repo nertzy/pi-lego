@@ -2,7 +2,7 @@
 
 Releases use explicit versions, curated changelog entries, and immutable `v<version>` tags. Pushing a matching tag runs `.github/workflows/publish.yml`, which stages the package through npm trusted publishing using [staged publishing](https://docs.npmjs.com/staged-publishing/) and then creates a GitHub Release from the matching `CHANGELOG.md` section.
 
-The workflow uses GitHub's OIDC identity and does not require an npm token. Staging never goes live by itself: after the workflow completes, a maintainer reviews the staged package (`npm stage list pi-lego`, `npm stage view <stage-id>`, optionally `npm stage download <stage-id>`) and approves it with 2FA — `npm stage approve <stage-id>` or the **Staged Packages** tab on npmjs.com. The version is not publicly available until that approval.
+The workflow uses GitHub's OIDC identity and does not require an npm token. Staging never goes live by itself: the job summary links directly to the staged release at `https://www.npmjs.com/settings/<maintainer>/staged-packages?filterPackage=pi-lego&filterVersion=<version>`, where a maintainer reviews and approves with 2FA — or via `npm stage list pi-lego` / `npm stage view <stage-id>` / `npm stage approve <stage-id>` from the CLI. The version is not publicly available until that approval.
 
 ## Prepare a release
 
