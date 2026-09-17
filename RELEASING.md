@@ -27,7 +27,7 @@ The workflow uses GitHub's OIDC identity and does not require an npm token. Stag
 
 The tag push starts the publish workflow. It rejects a tag that differs from `package.json`, a tag that does not point at the checked-out commit, and a missing or empty changelog section before staging. After staging succeeds, it creates the corresponding GitHub Release using only that version's changelog section. The workflow uses vanilla `setup-node` (Node 24) and relies on `package.json`'s `devEngines.packageManager` floor (`onFail: "error"`) for enforcement: `npm ci` fails the job on npm older than 11.15.0, before any stage is attempted.
 
-One-time registry hardening (recommended, on npmjs.com): configure the trusted publisher for this package with stage-only permissions, so CI-issued OIDC tokens can run `npm stage publish` but never `npm publish` directly. See <https://docs.npmjs.com/trusted-publishers/>.
+The trusted publisher for this package is configured with stage-only permissions on npmjs.com: CI-issued OIDC tokens can run `npm stage publish` but never `npm publish` directly. Keep it that way when rotating or re-creating the publisher. See <https://docs.npmjs.com/trusted-publishers/>.
 
 Do not move or reuse a pushed release tag. If a release fails after its tag is pushed, fix the problem and release a new version.
 
