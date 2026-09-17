@@ -29,16 +29,6 @@ jobs:
         run: node scripts/check-release-ref.ts
       - name: Require release notes
         run: node scripts/extract-release-notes.ts "${GITHUB_REF_NAME#v}" > /dev/null
-      - name: Require trusted-publishing npm support
-        run: |
-          npm_version=$(npm --version)
-          echo "npm $npm_version"
-          node -e '
-            const [major, minor, patch] = process.argv[1].split(".").map(Number);
-            if (major < 11 || (major === 11 && (minor < 5 || (minor === 5 && patch < 1)))) {
-              throw new Error("npm " + process.argv[1] + " does not support trusted publishing");
-            }
-          ' "$npm_version"
       - run: npm ci
       - name: Install actionlint
         shell: bash
@@ -50,7 +40,7 @@ jobs:
       - run: npm run lint
       - run: npm test
       - run: npm run typecheck
-      - run: npm publish --access public --provenance
+      - run: npm stage publish --access public --provenance
 
   release:
     needs: publish

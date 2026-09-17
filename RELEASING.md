@@ -1,8 +1,8 @@
 # Releasing
 
-Releases use explicit versions, curated changelog entries, and immutable `v<version>` tags. Pushing a matching tag runs `.github/workflows/publish.yml`, which publishes through npm trusted publishing and then creates a GitHub Release from the matching `CHANGELOG.md` section.
+Releases use explicit versions, curated changelog entries, and immutable `v<version>` tags. Pushing a matching tag runs `.github/workflows/publish.yml`, which stages the package through npm trusted publishing using [staged publishing](https://docs.npmjs.com/staged-publishing/) and then creates a GitHub Release from the matching `CHANGELOG.md` section.
 
-The workflow uses GitHub's OIDC identity and does not require an npm token. It uses the npm version bundled with Node 24 and fails before publishing if that version is older than the trusted-publishing minimum.
+The workflow uses GitHub's OIDC identity and does not require an npm token. Staging never goes live by itself: after the workflow completes, a maintainer reviews the staged package (`npm stage list pi-lego`, `npm stage view <stage-id>`, optionally `npm stage download <stage-id>`) and approves it with 2FA — `npm stage approve <stage-id>` or the **Staged Packages** tab on npmjs.com. The version is not publicly available until that approval.
 
 ## Prepare a release
 
@@ -25,7 +25,9 @@ The workflow uses GitHub's OIDC identity and does not require an npm token. It u
 4. Merge the version and changelog change to `main` after CI passes.
 5. Verify the intended `main` commit, then create and push an annotated `v<version>` tag at that exact commit.
 
-The tag push starts the publish workflow. It rejects a tag that differs from `package.json`, a tag that does not point at the checked-out commit, and a missing or empty changelog section before publishing. After publication succeeds, it creates the corresponding GitHub Release using only that version's changelog section.
+The tag push starts the publish workflow. It rejects a tag that differs from `package.json`, a tag that does not point at the checked-out commit, and a missing or empty changelog section before staging. After staging succeeds, it creates the corresponding GitHub Release using only that version's changelog section. The workflow uses vanilla `setup-node` (Node 24) and relies on `package.json`'s `devEngines.packageManager` floor (`onFail: "error"`) for enforcement: `npm ci` fails the job on npm older than 11.15.0, before any stage is attempted.
+
+One-time registry hardening (recommended, on npmjs.com): configure the trusted publisher for this package with stage-only permissions, so CI-issued OIDC tokens can run `npm stage publish` but never `npm publish` directly. See <https://docs.npmjs.com/trusted-publishers/>.
 
 Do not move or reuse a pushed release tag. If a release fails after its tag is pushed, fix the problem and release a new version.
 

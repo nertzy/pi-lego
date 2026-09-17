@@ -4,8 +4,13 @@ Thanks for helping improve pi-lego.
 
 ## Development
 
-pi-lego requires Node.js 22.19.0 or newer and
-[actionlint](https://github.com/rhysd/actionlint) 1.7.12. On macOS, install
+pi-lego requires Node.js 24 or newer and npm 11.15.0 or newer (enforced by
+`devEngines` in `package.json`), plus
+[actionlint](https://github.com/rhysd/actionlint) 1.7.12. Node version support
+tracks the [active-support cycles](https://endoflife.date/nodejs): the
+`engines.node` floor is the oldest actively supported major and CI tests
+exactly the active-support majors; maintenance-LTS lines are not supported
+targets. On macOS, install
 `actionlint` with Homebrew:
 
 ```bash

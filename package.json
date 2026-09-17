@@ -20,8 +20,15 @@
     "agent-conventions",
     "guardrails"
   ],
+  "devEngines": {
+    "packageManager": {
+      "name": "npm",
+      "version": ">=11.15.0",
+      "onFail": "error"
+    }
+  },
   "engines": {
-    "node": ">=22.19.0"
+    "node": ">=24.0.0"
   },
   "files": [
     "extension.ts",
