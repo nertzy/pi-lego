@@ -4,6 +4,7 @@ import { test } from "node:test";
 import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
 import {
   type ConventionBlock,
+  commandInvocations,
   evaluateCommand,
   registerBlocks,
 } from "../src/index.ts";
@@ -134,6 +135,42 @@ test("a block without an exception cannot be overridden", () => {
 
 test("allows a command when no block matches", () => {
   assert.equal(evaluateCommand("beta", [alpha, omega]), undefined);
+});
+
+test("commandInvocations unwraps wrappers to payload commands", () => {
+  const invocations = commandInvocations(
+    "sudo env MODE=test bash -c 'op run -- target arg' | other",
+  );
+  // Each wrapper layer appears alongside its unwrapped payload commands.
+  assert.deepEqual(
+    invocations.map((command) => command.words[0]),
+    ["sudo", "other", "env", "bash", "op", "target"],
+  );
+});
+
+test("an appliesTo predicate scopes which tool calls blocks evaluate", () => {
+  let handler:
+    | ((event: unknown, ctx?: { cwd?: string }) => unknown)
+    | undefined;
+  const pi = {
+    on(event: string, candidate: typeof handler) {
+      assert.equal(event, "tool_call");
+      handler = candidate;
+    },
+  } as unknown as ExtensionAPI;
+
+  registerBlocks(pi, [alpha], {
+    appliesTo: (scope) => scope.cwd?.startsWith("/work/") ?? false,
+  });
+  assert.ok(handler);
+
+  const bashEvent = { toolName: "bash", input: { command: "alpha" } };
+  assert.equal(handler(bashEvent, { cwd: "/elsewhere" }), undefined);
+  assert.equal(handler(bashEvent, undefined), undefined);
+  assert.deepEqual(handler(bashEvent, { cwd: "/work/repo" }), {
+    block: true,
+    reason: evaluateCommand("alpha", [alpha]),
+  });
 });
 
 test("registers one tool_call hook for bash and cmux_open_terminal", () => {

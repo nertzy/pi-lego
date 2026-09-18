@@ -2,6 +2,13 @@
 
 Notable changes to `pi-lego` are documented here.
 
+## [Unreleased]
+
+### Added
+
+- Added `commandInvocations(command, wrappers?)` to the public API so custom `detect` functions can inspect the arguments of unwrapped commands.
+- Added an `appliesTo(scope)` registration option that narrows which tool calls blocks evaluate, with access to the tool name, command text, and session cwd.
+
 ## [0.1.1] - 2026-09-17
 
 ### Changed
