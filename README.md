@@ -4,7 +4,7 @@
 
 Turn repeated agent corrections into reusable blocks.
 
-pi-lego is a framework for executable agent conventions. A block detects a command pattern, explains why it is unhelpful, gives an actionable alternative, and can offer a reason-bearing local exception. The default extension includes the `head`, `tail`, and `cd` blocks.
+pi-lego is a framework for executable agent conventions. A block detects a command pattern, explains why it is unhelpful, gives an actionable alternative, and can offer a reason-bearing local exception. The default extension includes the `head`, `tail`, `cd`, `recursive-search`, and `no-verify` blocks.
 
 This is corrective feedback, not a sandbox or permissions engine. It does not verify authorization, parse every shell construct, show confirmation dialogs, or grant permissions through slash commands.
 
@@ -64,6 +64,24 @@ A `cd` that ends a bash call changes a directory nothing in the call goes on to 
 ```bash
 # allow cd: smoke test asserts only that the directory is enterable
 cd vendor/installer
+```
+
+### `recursive-search`
+
+`find`, `fd`, `rg`, and recursive `grep` invocations whose target is `/`, `~`, `$HOME`, or the home directory's literal path scan the whole filesystem or home directory: slow, context-flooding, and liable to surface private files. Scope the search to a specific relevant directory instead. The pattern argument itself is not treated as a path, a `-e`/`-f` pattern option or `rg --files` marks every positional as a path, and `fd` also checks `--search-path` and `--base-directory`. When the broad scope is the actual query:
+
+```bash
+# allow recursive-search: locating a misplaced ssh key across home
+rg --files ~ | grep '\.pem$'
+```
+
+### `no-verify`
+
+`git commit --no-verify` (including `git commit -n`) and `git push --no-verify` bypass the hooks the repository runs to protect every commit and push. Run the command normally and fix what the hook reports; when a bypass is genuinely warranted:
+
+```bash
+# allow no-verify: pre-commit reformats generated fixtures already fixed upstream
+git commit --no-verify -m "Rework fixtures"
 ```
 
 ## Write a block
