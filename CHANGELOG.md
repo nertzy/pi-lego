@@ -6,7 +6,7 @@ Notable changes to `pi-lego` are documented here.
 
 ### Added
 
-- Added a `cd` block to the default extension for trailing `cd` calls that no same-call command consumes: each bash call starts fresh in the session working directory, so the change is discarded when the call ends.
+- Added `cd`, `recursive-search`, and `no-verify` blocks to the default extension: trailing `cd` calls that no same-call command consumes (each bash call starts fresh in the session working directory), `find`/`rg`/recursive `grep` searches rooted at `/`, `~`, or `$HOME`, and `git commit`/`git push --no-verify` hook bypasses.
 - Added `commandInvocations(command, wrappers?)` to the public API so custom `detect` functions can inspect the arguments of unwrapped commands.
 - Added an `appliesTo(scope)` registration option that narrows which tool calls blocks evaluate, with access to the tool name, command text, and session cwd.
 
