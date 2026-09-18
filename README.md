@@ -4,7 +4,7 @@
 
 Turn repeated agent corrections into reusable blocks.
 
-pi-lego is a framework for executable agent conventions. A block detects a command pattern, explains why it is unhelpful, gives an actionable alternative, and can offer a reason-bearing local exception. The default extension includes the `head` and `tail` blocks.
+pi-lego is a framework for executable agent conventions. A block detects a command pattern, explains why it is unhelpful, gives an actionable alternative, and can offer a reason-bearing local exception. The default extension includes the `head`, `tail`, and `cd` blocks.
 
 This is corrective feedback, not a sandbox or permissions engine. It does not verify authorization, parse every shell construct, show confirmation dialogs, or grant permissions through slash commands.
 
@@ -56,6 +56,15 @@ journalctl --unit app | tail -n 50
 ```
 
 The leading comment block may contain blank lines and multiple standalone comments, so each matching block can have its own exception. Parsing stops at the first executable line. Reasons must be nonempty, but may contain ordinary punctuation because the comment is inert. Quoted strings, inline comments, malformed comments, and comments after an executable line do not bypass a block.
+
+### `cd`
+
+A `cd` that ends a bash call changes a directory nothing in the call goes on to use, and each pi bash call starts fresh in the session working directory, so it never carries over to the next call either. A `cd` chained to its consumer (`cd dashboard && mise x -- bin/dev`) stays visible next to it and is allowed; so are cwd-relative or absolute paths and tool directory flags (`git -C`, `npm --prefix`, `make -C`). When a directory change genuinely stands alone:
+
+```bash
+# allow cd: smoke test asserts only that the directory is enterable
+cd vendor/installer
+```
 
 ## Write a block
 
