@@ -82,7 +82,15 @@ export default function (pi: ExtensionAPI): void {
 }
 ```
 
-A command pattern matches executable positions through pipelines, control flow, substitutions, nested shell commands, and the built-in wrappers `command`, `nohup`, `sudo`, `env`, `timeout`, `xargs`, `find -exec`, `bash`/`sh`/`zsh`/`fish -c`, `op run --`, `op plugin run --`, and `mise exec`/`mise x ... --`. Use `detect(command)` instead when a convention needs custom matching; a block cannot define both. If `exception.comment` is omitted, it defaults to `allow <id>`. Omit `exception` entirely for a block that cannot be overridden.
+A command pattern matches executable positions through pipelines, control flow, substitutions, nested shell commands, and the built-in wrappers `command`, `nohup`, `sudo`, `env`, `timeout`, `xargs`, `find -exec`, `bash`/`sh`/`zsh`/`fish -c`, `op run --`, `op plugin run --`, and `mise exec`/`mise x ... --`. Use `detect(command)` instead when a convention needs custom matching; a block cannot define both. Detectors that inspect arguments can enumerate unwrapped invocations with `commandInvocations(command)`, which yields each wrapper layer alongside its payload commands. If `exception.comment` is omitted, it defaults to `allow <id>`. Omit `exception` entirely for a block that cannot be overridden.
+
+To narrow where blocks apply — for example to one project's working directories — pass `appliesTo`. It sees each candidate tool call's name, command text, and the session cwd, and the blocks stay inert wherever it returns false:
+
+```ts
+registerBlocks(pi, [scriptCi], {
+  appliesTo: (scope) => scope.cwd?.startsWith("/path/to/repo") ?? false,
+});
+```
 
 If several blocks match, pi-lego reports all of them. Each exception only bypasses the block that owns its exact comment marker; all other matching blocks are still reported.
 
