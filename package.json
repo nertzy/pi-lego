@@ -70,13 +70,13 @@
   },
   "devDependencies": {
     "@biomejs/biome": "^2.5.13",
-    "@earendil-works/pi-coding-agent": "^0.85.1",
+    "@earendil-works/pi-coding-agent": "^0.99.2",
     "@types/node": "^26.5.0",
     "markdownlint-cli2": "^0.23.2",
     "typescript": "^7.0.2"
   },
   "dependencies": {
-    "unbash": "4.0.11"
+    "unbash": "5.0.0"
   },
   "overrides": {
     "smol-toml": "1.8.0"
