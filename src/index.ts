@@ -1,8 +1,9 @@
 import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
 import { isToolCallEventType } from "@earendil-works/pi-coding-agent";
 
-import { invokesCommand } from "./detectors.ts";
+import { commandInvocations, invokesCommand } from "./detectors.ts";
 
+export type { ShellCommand } from "./shell.ts";
 export {
   builtInWrappers,
   defineWrapper,
@@ -11,6 +12,7 @@ export {
   type WrapperInvocation,
   type WrapperTarget,
 } from "./wrappers.ts";
+export { commandInvocations };
 
 import type { WrapperDefinition } from "./wrappers.ts";
 
@@ -37,6 +39,21 @@ function exceptionComment(block: ConventionBlock): string {
 
 export interface EvaluationOptions {
   wrappers?: readonly WrapperDefinition[];
+}
+
+/** The context a registration-scope predicate sees for one tool call. */
+export interface BlockScope {
+  toolName: string;
+  command: string;
+  cwd?: string;
+}
+
+export interface RegisterOptions extends EvaluationOptions {
+  /**
+   * Narrow which tool calls the blocks evaluate, for example by `scope.cwd`.
+   * Without it, blocks apply to every bash and cmux_open_terminal call.
+   */
+  appliesTo?: (scope: BlockScope) => boolean;
 }
 
 function detects(
@@ -96,9 +113,9 @@ export function evaluateCommand(
 export function registerBlocks(
   pi: ExtensionAPI,
   blocks: readonly ConventionBlock[],
-  options: EvaluationOptions = {},
+  options: RegisterOptions = {},
 ): void {
-  pi.on("tool_call", (event) => {
+  pi.on("tool_call", (event, ctx) => {
     let command: string | undefined;
     if (isToolCallEventType("bash", event)) {
       command = event.input.command;
@@ -108,6 +125,16 @@ export function registerBlocks(
     }
 
     if (command === undefined) return undefined;
+    if (
+      options.appliesTo &&
+      !options.appliesTo({
+        toolName: event.toolName,
+        command,
+        cwd: ctx?.cwd,
+      })
+    ) {
+      return undefined;
+    }
     const reason = evaluateCommand(command, blocks, options);
     return reason ? { block: true, reason } : undefined;
   });

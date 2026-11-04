@@ -4,7 +4,7 @@
 
 Turn repeated agent corrections into reusable blocks.
 
-pi-lego is a framework for executable agent conventions. A block detects a command pattern, explains why it is unhelpful, gives an actionable alternative, and can offer a reason-bearing local exception. The default extension includes the `head` and `tail` blocks.
+pi-lego is a framework for executable agent conventions. A block detects a command pattern, explains why it is unhelpful, gives an actionable alternative, and can offer a reason-bearing local exception. The default extension includes the `head`, `tail`, `cd`, `recursive-search`, and `no-verify` blocks.
 
 This is corrective feedback, not a sandbox or permissions engine. It does not verify authorization, parse every shell construct, show confirmation dialogs, or grant permissions through slash commands.
 
@@ -57,6 +57,33 @@ journalctl --unit app | tail -n 50
 
 The leading comment block may contain blank lines and multiple standalone comments, so each matching block can have its own exception. Parsing stops at the first executable line. Reasons must be nonempty, but may contain ordinary punctuation because the comment is inert. Quoted strings, inline comments, malformed comments, and comments after an executable line do not bypass a block.
 
+### `cd`
+
+A `cd` that ends a bash call changes a directory nothing in the call goes on to use, and each pi bash call starts fresh in the session working directory, so it never carries over to the next call either. A `cd` chained to its consumer (`cd dashboard && mise x -- bin/dev`) stays visible next to it and is allowed; so are cwd-relative or absolute paths and tool directory flags (`git -C`, `npm --prefix`, `make -C`). When a directory change genuinely stands alone:
+
+```bash
+# allow cd: smoke test asserts only that the directory is enterable
+cd vendor/installer
+```
+
+### `recursive-search`
+
+`find`, `fd`, `rg`, and recursive `grep` invocations whose target is `/`, `~`, `$HOME`, or the home directory's literal path scan the whole filesystem or home directory: slow, context-flooding, and liable to surface private files. Scope the search to a specific relevant directory instead. The pattern argument itself is not treated as a path, a `-e`/`-f` pattern option or `rg --files` marks every positional as a path, and `fd` also checks `--search-path` and `--base-directory`. When the broad scope is the actual query:
+
+```bash
+# allow recursive-search: locating a misplaced ssh key across home
+rg --files ~ | grep '\.pem$'
+```
+
+### `no-verify`
+
+`git commit --no-verify` (including `git commit -n`) and `git push --no-verify` bypass the hooks the repository runs to protect every commit and push. Run the command normally and fix what the hook reports; when a bypass is genuinely warranted:
+
+```bash
+# allow no-verify: pre-commit reformats generated fixtures already fixed upstream
+git commit --no-verify -m "Rework fixtures"
+```
+
 ## Write a block
 
 Blocks are small TypeScript objects. There is no JSON DSL.
@@ -82,7 +109,15 @@ export default function (pi: ExtensionAPI): void {
 }
 ```
 
-A command pattern matches executable positions through pipelines, control flow, substitutions, nested shell commands, and the built-in wrappers `command`, `nohup`, `sudo`, `env`, `timeout`, `xargs`, `find -exec`, `bash`/`sh`/`zsh`/`fish -c`, `op run --`, `op plugin run --`, and `mise exec`/`mise x ... --`. Use `detect(command)` instead when a convention needs custom matching; a block cannot define both. If `exception.comment` is omitted, it defaults to `allow <id>`. Omit `exception` entirely for a block that cannot be overridden.
+A command pattern matches executable positions through pipelines, control flow, substitutions, nested shell commands, and the built-in wrappers `command`, `nohup`, `sudo`, `env`, `timeout`, `xargs`, `find -exec`, `bash`/`sh`/`zsh`/`fish -c`, `op run --`, `op plugin run --`, and `mise exec`/`mise x ... --`. Use `detect(command)` instead when a convention needs custom matching; a block cannot define both. Detectors that inspect arguments can enumerate unwrapped invocations with `commandInvocations(command)`, which yields each wrapper layer alongside its payload commands. If `exception.comment` is omitted, it defaults to `allow <id>`. Omit `exception` entirely for a block that cannot be overridden.
+
+To narrow where blocks apply — for example to one project's working directories — pass `appliesTo`. It sees each candidate tool call's name, command text, and the session cwd, and the blocks stay inert wherever it returns false:
+
+```ts
+registerBlocks(pi, [scriptCi], {
+  appliesTo: (scope) => scope.cwd?.startsWith("/path/to/repo") ?? false,
+});
+```
 
 If several blocks match, pi-lego reports all of them. Each exception only bypasses the block that owns its exact comment marker; all other matching blocks are still reported.
 
