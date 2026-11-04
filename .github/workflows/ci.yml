@@ -4,12 +4,23 @@ on:
   pull_request:
   push:
     branches: [main]
+  schedule:
+    - cron: "17 9 * * 1"
+  workflow_dispatch:
+    inputs:
+      pi-version:
+        description: "@earendil-works/pi-coding-agent version or dist-tag to test with the newest dependencies"
+        default: latest
 
 permissions:
   contents: read
 
+env:
+  PI_VERSION: ${{ inputs.pi-version || (github.event_name == 'schedule' && 'latest') || '' }}
+
 jobs:
   lint:
+    if: github.event_name != 'schedule'
     runs-on: ubuntu-latest
 
     steps:
@@ -40,7 +51,16 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
           cache: npm
-      - run: npm ci
+      - name: Install locked dependencies
+        if: env.PI_VERSION == ''
+        run: npm ci
+      - name: Install the newest dependencies and pi ${{ env.PI_VERSION }}, skipping releases under a day old
+        if: env.PI_VERSION != ''
+        run: |
+          rm package-lock.json
+          npm install --min-release-age=1
+          npm install --no-save --min-release-age=1 "@earendil-works/pi-coding-agent@$PI_VERSION"
+          node -p '"pi " + require("./node_modules/@earendil-works/pi-coding-agent/package.json").version'
       - run: npm test
       - run: npm run typecheck
       - name: Smoke-test the published package shape
@@ -50,7 +70,7 @@ jobs:
             "let input=''; process.stdin.on('data', chunk => input += chunk); process.stdin.on('end', () => { const data = JSON.parse(input); console.log((Array.isArray(data) ? data[0] : Object.values(data)[0]).filename); })")
           smoke_dir=$(mktemp -d)
           trap 'rm -rf "$smoke_dir" "$tarball"' EXIT
-          npm install --prefix "$smoke_dir" "$PWD/$tarball" @earendil-works/pi-coding-agent
+          npm install --min-release-age=1 --prefix "$smoke_dir" "$PWD/$tarball" "@earendil-works/pi-coding-agent@${PI_VERSION:-latest}"
           (
             cd "$smoke_dir"
             node --input-type=module -e '
