@@ -72,11 +72,11 @@
     "@biomejs/biome": "^2.5.13",
     "@earendil-works/pi-coding-agent": "^1.5.0",
     "@types/node": "^26.5.0",
-    "markdownlint-cli2": "^0.23.2",
+    "markdownlint-cli2": "^0.24.0",
     "typescript": "^7.0.2"
   },
   "dependencies": {
-    "unbash": "4.0.11"
+    "unbash": "6.0.3"
   },
   "overrides": {
     "smol-toml": "1.8.0"
