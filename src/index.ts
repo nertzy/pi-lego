@@ -3,6 +3,15 @@ import { isToolCallEventType } from "@earendil-works/pi-coding-agent";
 
 import { commandInvocations, invokesCommand } from "./detectors.ts";
 
+export {
+  type ArgumentBlock,
+  type ArgumentScope,
+  evaluateArguments,
+  type RegisterArgumentOptions,
+  registerArgumentBlocks,
+  stringArguments,
+  type ToolArgument,
+} from "./arguments.ts";
 export type { ShellCommand } from "./shell.ts";
 export {
   builtInWrappers,

@@ -9,6 +9,8 @@ Notable changes to `pi-lego` are documented here.
 - Added `cd`, `recursive-search`, and `no-verify` blocks to the default extension: trailing `cd` calls that no same-call command consumes (each bash call starts fresh in the session working directory), `find`/`fd`/`rg`/recursive `grep` searches rooted at `/`, `~`, `$HOME`, or the literal home path, and `git commit`/`git push --no-verify` hook bypasses.
 - Added `commandInvocations(command, wrappers?)` to the public API so custom `detect` functions can inspect the arguments of unwrapped commands.
 - Added an `appliesTo(scope)` registration option that narrows which tool calls blocks evaluate, with access to the tool name, command text, and session cwd.
+- Added argument blocks (`ArgumentBlock`, `registerArgumentBlocks`, `evaluateArguments`, `stringArguments`), which inspect the string arguments of any tool call rather than shell command text.
+- Added the `pruned-placeholder` argument block to the default extension: it refuses a tool call whose argument is exactly a context-pruner stand-in such as `<purged-args size="900" ref="t323"/>`, which a model re-issuing an earlier call otherwise runs as a command or writes over a file.
 
 ## [0.1.1] - 2026-09-17
 

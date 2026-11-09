@@ -4,7 +4,7 @@
 
 Turn repeated agent corrections into reusable blocks.
 
-pi-lego is a framework for executable agent conventions. A block detects a command pattern, explains why it is unhelpful, gives an actionable alternative, and can offer a reason-bearing local exception. The default extension includes the `head`, `tail`, `cd`, `recursive-search`, and `no-verify` blocks.
+pi-lego is a framework for executable agent conventions. A block detects a command pattern, explains why it is unhelpful, gives an actionable alternative, and can offer a reason-bearing local exception. The default extension includes the `head`, `tail`, `cd`, `recursive-search`, and `no-verify` command blocks and the `pruned-placeholder` argument block.
 
 This is corrective feedback, not a sandbox or permissions engine. It does not verify authorization, parse every shell construct, show confirmation dialogs, or grant permissions through slash commands.
 
@@ -22,7 +22,7 @@ For local development, install a checkout instead:
 pi install /path/to/pi-lego
 ```
 
-Restart pi or run `/reload`. The package's default extension registers the included blocks for `bash` and `cmux_open_terminal` tool calls.
+Restart pi or run `/reload`. The package's default extension registers the included command blocks for `bash` and `cmux_open_terminal` tool calls, and the included argument block for every tool call.
 
 ## Included blocks
 
@@ -84,6 +84,10 @@ rg --files ~ | grep '\.pem$'
 git commit --no-verify -m "Rework fixtures"
 ```
 
+### `pruned-placeholder`
+
+Context pruners such as [pi-condense](https://github.com/jjuraszek/pi-condense) replace the arguments of old tool calls with a stand-in like `<purged-args size="900" ref="t323"/>` or `<purged-errored-args size="657"/>`. A model that re-issues "the same call" sometimes copies the stand-in verbatim, so `bash` runs the marker (a syntax error) or `write` replaces a file with it. This block refuses any tool call whose string argument is exactly such a marker and points the model at the pruner's recovery path. Prose that merely mentions a marker is not affected, and the block has no exception.
+
 ## Write a block
 
 Blocks are small TypeScript objects. There is no JSON DSL.
@@ -121,6 +125,31 @@ registerBlocks(pi, [scriptCi], {
 
 If several blocks match, pi-lego reports all of them. Each exception only bypasses the block that owns its exact comment marker; all other matching blocks are still reported.
 
+### Argument blocks
+
+A command block sees shell text. An argument block sees every string argument of every tool call, for conventions about what a call carries rather than which command it runs: a `write` whose content is a pruner placeholder, an `edit` that pastes a secret. `detect` receives one string leaf at a time with its tool name and dotted path (`content`, `edits.0.newText`); `tools` limits the block to named tools. Argument blocks have no comment exception, so reserve them for text that has no legitimate form.
+
+```ts
+import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
+import { registerArgumentBlocks, type ArgumentBlock } from "pi-lego";
+
+const conflictMarker: ArgumentBlock = {
+  id: "conflict-marker",
+  tools: ["write", "edit"],
+  detect: ({ value }) => /^(<{7}|={7}|>{7})( |$)/m.test(value),
+  rationale: "A merge conflict marker in written content lands in the file as text.",
+  alternative: "Resolve the conflict and write the resolved content.",
+};
+
+export default function (pi: ExtensionAPI): void {
+  registerArgumentBlocks(pi, [conflictMarker], {
+    appliesTo: (scope) => scope.cwd?.startsWith("/path/to/repo") ?? false,
+  });
+}
+```
+
+`evaluateArguments(toolName, input, blocks)` returns the same feedback without registering a hook, and `stringArguments(toolName, input)` lists the leaves a block would see.
+
 ### Add command wrappers
 
 Custom wrapper definitions compose with the built-ins. A declarative prefix can be a shell string or an exact token array:
@@ -157,7 +186,7 @@ A resolver can return `{ words: [...] }` for an already-tokenized command or `{ 
 
 ## Scope and limitations
 
-- Matchers inspect command text before tool execution. They do not constrain other tools or commands launched outside these two pi tool calls.
+- Command matchers inspect `bash` and `cmux_open_terminal` text before tool execution; argument matchers inspect the string arguments of any tool call. Neither constrains commands launched outside pi tool calls.
 - Shell structure is parsed without execution by [unbash](https://github.com/webpro-nl/unbash). It targets Bash (with much POSIX `sh` syntax), not PowerShell, `cmd.exe`, or every construct of other shells. Malformed input is inspected through unbash's best-effort partial AST; parser recovery can still omit an invocation.
 - Wrapper definitions model command-specific argument semantics. The built-ins cover only the forms listed above; unsupported flags or an unusual form may require a custom resolver. Wrapper expansion is capped at 64 commands to stop cyclic custom definitions.
 - Exceptions are local declarations of intent. They are not capabilities, signed approvals, or an audit system.

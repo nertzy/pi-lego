@@ -16,10 +16,41 @@ test("the pi loader registers the default tool_call path", async () => {
   );
   assert.ok(extension);
 
+  // One hook for shell-command blocks, one for argument blocks.
   const handlers = extension.handlers.get("tool_call") ?? [];
-  assert.equal(handlers.length, 1);
-  const handler = handlers[0];
+  assert.equal(handlers.length, 2);
+  const [handler, argumentHandler] = handlers;
   assert.ok(handler);
+  assert.ok(argumentHandler);
+
+  const placeholder = await argumentHandler(
+    {
+      type: "tool_call",
+      toolCallId: "smoke-placeholder",
+      toolName: "write",
+      input: {
+        path: "/tmp/notes.md",
+        content: '<purged-args size="644" ref="t881"/>',
+      },
+    },
+    {},
+  );
+  assert.match(
+    (placeholder as { reason?: string } | undefined)?.reason ?? "",
+    /^Tool call blocked \(not executed\): `pruned-placeholder` not allowed in `write` argument `content`\./,
+  );
+  assert.equal(
+    await argumentHandler(
+      {
+        type: "tool_call",
+        toolCallId: "smoke-placeholder-allowed",
+        toolName: "bash",
+        input: { command: "tail -n 1 harmless.log" },
+      },
+      {},
+    ),
+    undefined,
+  );
 
   const blocked = await handler(
     {
