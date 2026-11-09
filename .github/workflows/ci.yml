@@ -64,6 +64,12 @@ jobs:
               const extension = loaded.extensions.find(
                 candidate => candidate.resolvedPath === extensionPath,
               );
-              assert.equal(extension?.handlers.get("tool_call")?.length, 1);
+              const handlers = extension?.handlers.get("tool_call") ?? [];
+              assert.equal(handlers.length, 2);
+              const results = await Promise.all(handlers.map(handler => handler(
+                { type: "tool_call", toolName: "write", toolCallId: "smoke", input: { path: "/tmp/smoke", content: "<purged-args size=\"9\" ref=\"t1\"/>" } },
+                { cwd: process.cwd() },
+              )));
+              assert.ok(results.some(result => result?.block === true), "the packaged pruned-placeholder block fires");
             '
           )
