@@ -1,5 +1,6 @@
 # pi-lego
 
+[![CI](https://github.com/nertzy/pi-lego/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/nertzy/pi-lego/actions/workflows/ci.yml)
 [![npm version](https://img.shields.io/npm/v/pi-lego)](https://www.npmjs.com/package/pi-lego)
 
 Turn repeated agent corrections into reusable blocks.
